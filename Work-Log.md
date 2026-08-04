@@ -19,3 +19,13 @@ In the guide they had to download 'Microsoft Windows Security Events via AMA'. H
 
 Configured and added a data collection rule (DCR) to the log analytics workspace. Whilst configuring the rule, I selected the relevant VM, which data logs I wanted to be collected/forwarded, and where the rule should pull the data logs from (Microsoft event viewer).
 Although previous logs are not forwarded to the DCR, new logs will be forwarded to the newly created DCR. Now the VM and DCR and Microsoft Sentinel are connected.
+
+## 04/08/2026
+After trying to run a query to show all the logs forwarded from the VM, I expected all the logs to show however there were 0 results.
+After troubleshooting for a bit, it seems that when I tried to access the content hub in Microsoft Sentinel, the page did not show up properly. Which is why I thought the guide was out of date. After reloading the content hub page to get it to display properly, I downloaded Windows Security Events. Then I navigated to the 'Data Connectors' tab, and within the 'Windows Security Event via AMA' I created a new DCR with the same configurations as I had before. 
+
+So after creating the new DCR and comparing it with the previous DCR, both were created in the resource group. However, the DCR that I created using 'Windows Security Event via AMA' was actually connected to a resource (1st image). Whereas the previous DCR was only connected to a data source but not a resource (2nd image). The new DCR also had an automatically created tag that read 'createdBy: Sentinel'
+<img width="260" height="115" alt="image" src="https://github.com/user-attachments/assets/f0cbe316-f2dd-40ba-a40b-1bc435173aae" />
+<img width="252" height="108" alt="image" src="https://github.com/user-attachments/assets/151c7492-04dd-4d06-841e-7aafbbf84cff" />
+
+To double check that the VM is connected to Microsoft Sentinel I navigated the the VM's 'Extension & Application' page and found that 'AzureMonitorWindowsAgent' had been automatically installed by Sentinel when we created the DCR.
