@@ -29,3 +29,58 @@ So after creating the new DCR and comparing it with the previous DCR, both were 
 <img width="252" height="108" alt="image" src="https://github.com/user-attachments/assets/151c7492-04dd-4d06-841e-7aafbbf84cff" />
 
 To double check that the VM is connected to Microsoft Sentinel I navigated the the VM's 'Extension & Application' page and found that 'AzureMonitorWindowsAgent' had been automatically installed by Sentinel when we created the DCR.
+
+## 05/08/2026
+Queried the logs using KQL to show certain security events. Expanded some of the events and using the IP address provided in the event, used IP Geolocation to get the approximate location of the attacker. 
+
+Added a prebuilt CSV document, containing the approximate geographic location of certain IP ranges, to the watchlist in Sentinel. This enables us to use the information in the CSV directly in the logs using the 
+``_GetWatchList("[watchlist name]")`` command in KQL.
+
+Generated a KQL query to search for all failed login events from a single attacker, showing their location.
+```
+let GeoIPDB_FULL = _GetWatchlist("geoip");
+let WindowsEvents = SecurityEvent
+    | where IpAddress == <attacker IP address>
+    | where EventID == 4625
+    | order by TimeGenerated desc
+    | evaluate ipv4_lookup(GeoIPDB_FULL, IpAddress, network);
+WindowsEvents
+```
+
+Created a new query section within the workbook in Sentinel to visually display the location of attackers. I used the JSON command
+```
+{
+	"type": 3,
+	"content": {
+	"version": "KqlItem/1.0",
+	"query": "let GeoIPDB_FULL = _GetWatchlist(\"geoip\");\nlet WindowsEvents = SecurityEvent;\nWindowsEvents | where EventID == 4625\n| order by TimeGenerated desc\n| evaluate ipv4_lookup(GeoIPDB_FULL, IpAddress, network)\n| summarize FailureCount = count() by IpAddress, latitude, longitude, cityname, countryname\n| project FailureCount, AttackerIp = IpAddress, latitude, longitude, city = cityname, country = countryname,\nfriendly_location = strcat(cityname, \" (\", countryname, \")\");",
+	"size": 3,
+	"timeContext": {
+		"durationMs": 2592000000
+	},
+	"queryType": 0,
+	"resourceType": "microsoft.operationalinsights/workspaces",
+	"visualization": "map",
+	"mapSettings": {
+		"locInfo": "LatLong",
+		"locInfoColumn": "countryname",
+		"latitude": "latitude",
+		"longitude": "longitude",
+		"sizeSettings": "FailureCount",
+		"sizeAggregation": "Sum",
+		"opacity": 0.8,
+		"labelSettings": "friendly_location",
+		"legendMetric": "FailureCount",
+		"legendAggregation": "Sum",
+		"itemColorSettings": {
+		"nodeColorField": "FailureCount",
+		"colorAggregation": "Sum",
+		"type": "heatmap",
+		"heatmapPalette": "greenRed"
+		}
+	}
+	},
+	"name": "query - 0"
+}
+```
+So here is where the guide video ends. However there is still a lot more to learn. Next steps, I would like to build an Automated Triage Playbooks (SOAR), write Custom Analytics Rules, expand the Attack Surface with a Linux Honeypot, integrate Threat Intelligence (IoCs).
