@@ -1,1 +1,1 @@
-# Cyber-Home-Lab
+# Cybersecurity-Home-SOC
