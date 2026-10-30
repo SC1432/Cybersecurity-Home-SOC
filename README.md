@@ -77,7 +77,3 @@ Planned extensions to the lab include:
 - **Custom Analytics Rules** — proactive alerting on defined detection logic
 - **Expanded attack surface** — adding a Linux honeypot for cross-platform telemetry
 - **Threat Intelligence integration** — ingesting external Indicators of Compromise (IoCs) feeds
-
-## Notes
-
-This lab was built iteratively while following an Azure/Sentinel tutorial that had gone out of date due to portal UI changes (e.g., Data Connectors relocating under Configuration, and connectors requiring a Content Hub solution install as a prerequisite). Adapting to these discrepancies became part of the learning process itself.
